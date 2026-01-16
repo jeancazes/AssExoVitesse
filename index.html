@@ -164,31 +164,79 @@
       );
     }
 
-    // Problèmes par niveau de difficulté
+    // Problèmes par niveau de difficulté (12 exercices par niveau)
     const problemsByLevel = {
       debutant: [
+        // Thème: Marche / Randonnée
         { type: 'vitesse', enonce: "Luna a marché pendant 3 heures et a parcouru 12 km. À quelle vitesse s'est-elle déplacée ?", distance: 12, temps: 3, unite_distance: 'km', unite_temps: 'h', reponse: 4, unite_reponse: 'km/h' },
+        { type: 'vitesse', enonce: "Pendant une randonnée, Paul a parcouru 15 km en 5 heures. Quelle était sa vitesse moyenne ?", distance: 15, temps: 5, unite_distance: 'km', unite_temps: 'h', reponse: 3, unite_reponse: 'km/h' },
+        { type: 'distance', enonce: "Marie marche à 5 km/h. Quelle distance parcourt-elle en 2 heures ?", vitesse: 5, temps: 2, unite_vitesse: 'km/h', unite_temps: 'h', reponse: 10, unite_reponse: 'km' },
+        // Thème: Vélo
         { type: 'vitesse', enonce: "Tom a fait du vélo pendant 2 heures et a parcouru 20 km. Quelle était sa vitesse ?", distance: 20, temps: 2, unite_distance: 'km', unite_temps: 'h', reponse: 10, unite_reponse: 'km/h' },
+        { type: 'distance', enonce: "Emma roule à vélo à 12 km/h. Quelle distance parcourt-elle en 3 heures ?", vitesse: 12, temps: 3, unite_vitesse: 'km/h', unite_temps: 'h', reponse: 36, unite_reponse: 'km' },
+        { type: 'vitesse', enonce: "Léo a pédalé 24 km en 4 heures. À quelle vitesse roulait-il ?", distance: 24, temps: 4, unite_distance: 'km', unite_temps: 'h', reponse: 6, unite_reponse: 'km/h' },
+        // Thème: Animaux lents
         { type: 'distance', enonce: "Une tortue avance à 2 km/h. Quelle distance parcourt-elle en 4 heures ?", vitesse: 2, temps: 4, unite_vitesse: 'km/h', unite_temps: 'h', reponse: 8, unite_reponse: 'km' },
-        { type: 'distance', enonce: "Un escargot se déplace à 0.01 m/s. Quelle distance parcourt-il en 100 secondes ?", vitesse: 0.01, temps: 100, unite_vitesse: 'm/s', unite_temps: 's', reponse: 1, unite_reponse: 'm' },
+        { type: 'distance', enonce: "Un escargot se déplace à 0.05 m/s. Quelle distance parcourt-il en 20 secondes ?", vitesse: 0.05, temps: 20, unite_vitesse: 'm/s', unite_temps: 's', reponse: 1, unite_reponse: 'm' },
+        { type: 'vitesse', enonce: "Une chenille parcourt 6 mètres en 2 minutes. Quelle est sa vitesse en m/min ?", distance: 6, temps: 2, unite_distance: 'm', unite_temps: 'min', reponse: 3, unite_reponse: 'm/min' },
+        // Thème: Voiture / Bus
+        { type: 'distance', enonce: "Une voiture roule à 50 km/h. Quelle distance parcourt-elle en 2 heures ?", vitesse: 50, temps: 2, unite_vitesse: 'km/h', unite_temps: 'h', reponse: 100, unite_reponse: 'km' },
+        { type: 'vitesse', enonce: "Un bus scolaire a parcouru 30 km en 1 heure. Quelle était sa vitesse ?", distance: 30, temps: 1, unite_distance: 'km', unite_temps: 'h', reponse: 30, unite_reponse: 'km/h' },
+        { type: 'distance', enonce: "Le car de l'école roule à 40 km/h. Quelle distance parcourt-il en 3 heures ?", vitesse: 40, temps: 3, unite_vitesse: 'km/h', unite_temps: 'h', reponse: 120, unite_reponse: 'km' },
       ],
       apprenti: [
+        // Thème: Marche / Course
         { type: 'vitesse', enonce: "Gaspard a marché pendant 2h et a parcouru 16 km. À quelle vitesse est-il allé ?", distance: 16, temps: 2, unite_distance: 'km', unite_temps: 'h', reponse: 8, unite_reponse: 'km/h' },
+        { type: 'temps', enonce: "Sarah court à 10 km/h. Combien de temps lui faut-il pour parcourir 5 km ?", vitesse: 10, distance: 5, unite_vitesse: 'km/h', unite_distance: 'km', reponse: 0.5, unite_reponse: 'h' },
+        { type: 'distance', enonce: "Un jogger court à 8 km/h pendant 1h30. Quelle distance parcourt-il ?", vitesse: 8, temps: 1.5, unite_vitesse: 'km/h', unite_temps: 'h', reponse: 12, unite_reponse: 'km' },
+        // Thème: Train
         { type: 'distance', enonce: "Quelle distance aura parcouru le TGV (300 km/h) au bout de 2h de voyage ?", vitesse: 300, temps: 2, unite_vitesse: 'km/h', unite_temps: 'h', reponse: 600, unite_reponse: 'km' },
+        { type: 'temps', enonce: "Un train roule à 150 km/h. Combien de temps met-il pour faire 300 km ?", vitesse: 150, distance: 300, unite_vitesse: 'km/h', unite_distance: 'km', reponse: 2, unite_reponse: 'h' },
+        { type: 'vitesse', enonce: "Le TER parcourt 120 km en 2 heures. Quelle est sa vitesse moyenne ?", distance: 120, temps: 2, unite_distance: 'km', unite_temps: 'h', reponse: 60, unite_reponse: 'km/h' },
+        // Thème: Vélo / Cyclisme
         { type: 'vitesse', enonce: "Un cycliste parcourt 45 km en 3 heures. Quelle est sa vitesse moyenne ?", distance: 45, temps: 3, unite_distance: 'km', unite_temps: 'h', reponse: 15, unite_reponse: 'km/h' },
+        { type: 'distance', enonce: "Un cycliste du Tour de France roule à 40 km/h pendant 4 heures. Quelle distance parcourt-il ?", vitesse: 40, temps: 4, unite_vitesse: 'km/h', unite_temps: 'h', reponse: 160, unite_reponse: 'km' },
+        { type: 'temps', enonce: "Julie roule à 20 km/h. Combien de temps met-elle pour parcourir 30 km ?", vitesse: 20, distance: 30, unite_vitesse: 'km/h', unite_distance: 'km', reponse: 1.5, unite_reponse: 'h' },
+        // Thème: Voiture
         { type: 'temps', enonce: "Combien de temps met une voiture roulant à 60 km/h pour parcourir 180 km ?", vitesse: 60, distance: 180, unite_vitesse: 'km/h', unite_distance: 'km', reponse: 3, unite_reponse: 'h' },
+        { type: 'vitesse', enonce: "Une voiture parcourt 200 km en 4 heures. Quelle est sa vitesse moyenne ?", distance: 200, temps: 4, unite_distance: 'km', unite_temps: 'h', reponse: 50, unite_reponse: 'km/h' },
+        { type: 'distance', enonce: "Une voiture roule à 90 km/h sur l'autoroute pendant 3 heures. Quelle distance parcourt-elle ?", vitesse: 90, temps: 3, unite_vitesse: 'km/h', unite_temps: 'h', reponse: 270, unite_reponse: 'km' },
       ],
       maitre: [
-        { type: 'conversion', enonce: "Convertir 15 m/s en km/h", valeur: 15, de: 'm/s', vers: 'km/h', reponse: 54, unite_reponse: 'km/h' },
+        // Thème: Conversions m/s ↔ km/h
+        { type: 'conversion', enonce: "Convertir 15 m/s en km/h.", valeur: 15, de: 'm/s', vers: 'km/h', reponse: 54, unite_reponse: 'km/h' },
+        { type: 'conversion', enonce: "Convertir 20 m/s en km/h.", valeur: 20, de: 'm/s', vers: 'km/h', reponse: 72, unite_reponse: 'km/h' },
+        { type: 'conversion', enonce: "Convertir 90 km/h en m/s.", valeur: 90, de: 'km/h', vers: 'm/s', reponse: 25, unite_reponse: 'm/s' },
+        // Thème: Animaux rapides avec conversion
         { type: 'vitesse_conversion', enonce: "Quelle est la vitesse (en km/h) d'un animal qui court 300 m en 10 s ?", distance: 300, temps: 10, unite_distance: 'm', unite_temps: 's', reponse: 108, unite_reponse: 'km/h' },
+        { type: 'vitesse_conversion', enonce: "Un lévrier court 400 m en 20 secondes. Quelle est sa vitesse en km/h ?", distance: 400, temps: 20, unite_distance: 'm', unite_temps: 's', reponse: 72, unite_reponse: 'km/h' },
+        { type: 'vitesse_conversion', enonce: "Un faucon en piqué parcourt 500 m en 5 secondes. Quelle est sa vitesse en km/h ?", distance: 500, temps: 5, unite_distance: 'm', unite_temps: 's', reponse: 360, unite_reponse: 'km/h' },
+        // Thème: Problèmes avec minutes
         { type: 'distance_conversion', enonce: "Quelle distance (en m) aura parcouru une voiture (80 km/h) qui roule pendant 45 minutes ?", vitesse: 80, temps: 45, unite_vitesse: 'km/h', unite_temps: 'min', reponse: 60000, unite_reponse: 'm' },
+        { type: 'distance_conversion', enonce: "Un cycliste roule à 30 km/h pendant 20 minutes. Quelle distance (en km) parcourt-il ?", vitesse: 30, temps: 20, unite_vitesse: 'km/h', unite_temps: 'min', reponse: 10, unite_reponse: 'km' },
+        { type: 'temps', enonce: "Combien de minutes faut-il à un coureur allant à 12 km/h pour parcourir 3 km ?", vitesse: 12, distance: 3, unite_vitesse: 'km/h', unite_distance: 'km', reponse: 15, unite_reponse: 'min' },
+        // Thème: Horaires
         { type: 'temps', enonce: "À quelle heure arrivera un bus parti à 7h00 s'il roule à 80 km/h pour parcourir 40 km ?", vitesse: 80, distance: 40, depart: '7h00', reponse: '7h30', unite_reponse: '' },
+        { type: 'temps', enonce: "Un train part à 9h00 et roule à 100 km/h. À quelle heure arrivera-t-il après 150 km ?", vitesse: 100, distance: 150, depart: '9h00', reponse: '10h30', unite_reponse: '' },
+        { type: 'temps', enonce: "Marie part à 14h00 en vélo à 15 km/h. À quelle heure arrivera-t-elle après 30 km ?", vitesse: 15, distance: 30, depart: '14h00', reponse: '16h00', unite_reponse: '' },
       ],
       expert: [
+        // Thème: Espace et lumière
         { type: 'annee_lumiere', enonce: "Combien mesure une année-lumière ? (La lumière voyage à 300 000 000 m/s)", vitesse: 300000000, temps_description: 'un an', reponse: 9467000000000000, unite_reponse: 'm' },
+        { type: 'complexe', enonce: "La Lune est à 384 400 km de la Terre. En combien de temps (en secondes) la lumière (300 000 km/s) atteint-elle la Terre ?", vitesse: 300000, distance: 384400, reponse: 1.28, unite_reponse: 's' },
+        { type: 'complexe', enonce: "Le Soleil est à 150 millions de km de la Terre. En combien de minutes la lumière (300 000 km/s) nous parvient-elle ?", vitesse: 300000, distance: 150000000, reponse: 8.33, unite_reponse: 'min' },
+        { type: 'complexe', enonce: "La sonde Voyager 1 voyage à 17 km/s. Combien de km parcourt-elle en une journée ?", vitesse: 17, temps: 86400, reponse: 1468800, unite_reponse: 'km' },
+        // Thème: Tour du monde
         { type: 'complexe', enonce: "Un avion vole à 900 km/h. Combien de temps lui faut-il pour faire le tour de la Terre (40 000 km) ?", vitesse: 900, distance: 40000, reponse: 44.4, unite_reponse: 'h' },
-        { type: 'complexe', enonce: "La Lune est à 384 400 km de la Terre. En combien de temps la lumière (300 000 000 m/s) atteint-elle la Terre depuis la Lune ?", vitesse: 300000000, distance: 384400000, reponse: 1.28, unite_reponse: 's' },
+        { type: 'complexe', enonce: "Un voilier navigue à 15 km/h. Combien de jours lui faut-il pour traverser l'Atlantique (6000 km) ?", vitesse: 15, distance: 6000, reponse: 16.67, unite_reponse: 'jours' },
+        { type: 'complexe', enonce: "L'ISS orbite à 28 000 km/h. Combien de temps (en minutes) met-elle pour faire un tour de la Terre (42 000 km) ?", vitesse: 28000, distance: 42000, reponse: 90, unite_reponse: 'min' },
+        // Thème: Comparaisons et conversions complexes
         { type: 'conversion_complexe', enonce: "Un guépard court à 30 m/s. Est-il plus rapide qu'une voiture roulant à 100 km/h ? Justifie ta réponse.", vitesse1: 30, vitesse2: 100, comparaison: true },
+        { type: 'conversion_complexe', enonce: "Usain Bolt court le 100m en 9.58s. Un TGV roule à 320 km/h. Qui est le plus rapide ? Justifie.", vitesse1: 10.44, vitesse2: 320, comparaison: true },
+        { type: 'complexe', enonce: "Un son voyage à 340 m/s. Tu vois un éclair et entends le tonnerre 6 secondes plus tard. À quelle distance (en km) est l'orage ?", vitesse: 340, temps: 6, reponse: 2.04, unite_reponse: 'km' },
+        // Thème: Problèmes à étapes
+        { type: 'complexe', enonce: "Un marathonien court 42 km. Il fait les 21 premiers km à 15 km/h et les 21 suivants à 12 km/h. Quel est son temps total ?", reponse: 3.15, unite_reponse: 'h' },
+        { type: 'complexe', enonce: "Une fusée accélère de 0 à 28 000 km/h en 8 minutes pour atteindre l'orbite. Quelle est sa vitesse moyenne durant cette phase ?", reponse: 14000, unite_reponse: 'km/h' },
       ]
     };
 
