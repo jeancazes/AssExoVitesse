@@ -38,6 +38,209 @@
   <script type="text/babel" data-type="module">
     const { useState, useRef, useEffect } = React;
 
+    // Composant Calculatrice flottante
+    function Calculatrice({ onClose }) {
+      const [display, setDisplay] = useState('0');
+      const [prevValue, setPrevValue] = useState(null);
+      const [operation, setOperation] = useState(null);
+      const [waitingForOperand, setWaitingForOperand] = useState(false);
+      const [isDragging, setIsDragging] = useState(false);
+      const [position, setPosition] = useState({ x: window.innerWidth - 280, y: 100 });
+      const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+      const calcRef = useRef(null);
+
+      const handleMouseDown = (e) => {
+        if (e.target.closest('.calc-buttons')) return;
+        setIsDragging(true);
+        const rect = calcRef.current.getBoundingClientRect();
+        setDragOffset({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+      };
+
+      useEffect(() => {
+        const handleMouseMove = (e) => {
+          if (!isDragging) return;
+          setPosition({
+            x: Math.max(0, Math.min(window.innerWidth - 250, e.clientX - dragOffset.x)),
+            y: Math.max(0, Math.min(window.innerHeight - 350, e.clientY - dragOffset.y))
+          });
+        };
+        const handleMouseUp = () => setIsDragging(false);
+        
+        if (isDragging) {
+          document.addEventListener('mousemove', handleMouseMove);
+          document.addEventListener('mouseup', handleMouseUp);
+        }
+        return () => {
+          document.removeEventListener('mousemove', handleMouseMove);
+          document.removeEventListener('mouseup', handleMouseUp);
+        };
+      }, [isDragging, dragOffset]);
+
+      const inputDigit = (digit) => {
+        if (waitingForOperand) {
+          setDisplay(digit);
+          setWaitingForOperand(false);
+        } else {
+          setDisplay(display === '0' ? digit : display + digit);
+        }
+      };
+
+      const inputDecimal = () => {
+        if (waitingForOperand) {
+          setDisplay('0.');
+          setWaitingForOperand(false);
+        } else if (!display.includes('.')) {
+          setDisplay(display + '.');
+        }
+      };
+
+      const clear = () => {
+        setDisplay('0');
+        setPrevValue(null);
+        setOperation(null);
+        setWaitingForOperand(false);
+      };
+
+      const performOperation = (nextOperation) => {
+        const inputValue = parseFloat(display);
+        
+        if (prevValue === null) {
+          setPrevValue(inputValue);
+        } else if (operation) {
+          const currentValue = prevValue || 0;
+          let result;
+          switch (operation) {
+            case '+': result = currentValue + inputValue; break;
+            case '-': result = currentValue - inputValue; break;
+            case '×': result = currentValue * inputValue; break;
+            case '÷': result = inputValue !== 0 ? currentValue / inputValue : 'Erreur'; break;
+            default: result = inputValue;
+          }
+          setDisplay(String(result));
+          setPrevValue(result);
+        }
+        
+        setWaitingForOperand(true);
+        setOperation(nextOperation);
+      };
+
+      const calculate = () => {
+        if (!operation || prevValue === null) return;
+        
+        const inputValue = parseFloat(display);
+        let result;
+        switch (operation) {
+          case '+': result = prevValue + inputValue; break;
+          case '-': result = prevValue - inputValue; break;
+          case '×': result = prevValue * inputValue; break;
+          case '÷': result = inputValue !== 0 ? prevValue / inputValue : 'Erreur'; break;
+          default: result = inputValue;
+        }
+        
+        if (typeof result === 'number') {
+          result = Math.round(result * 1000000) / 1000000;
+        }
+        
+        setDisplay(String(result));
+        setPrevValue(null);
+        setOperation(null);
+        setWaitingForOperand(true);
+      };
+
+      const calcStyles = {
+        container: {
+          position: 'fixed',
+          left: position.x,
+          top: position.y,
+          width: '240px',
+          background: 'linear-gradient(145deg, #2d2d2d, #1a1a1a)',
+          borderRadius: '20px',
+          padding: '15px',
+          boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
+          zIndex: 1000,
+          cursor: isDragging ? 'grabbing' : 'grab',
+          userSelect: 'none',
+        },
+        header: {
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '10px',
+          padding: '0 5px',
+        },
+        title: { color: '#888', fontSize: '0.8rem', fontWeight: 'bold' },
+        closeBtn: {
+          background: '#ff5f57',
+          border: 'none',
+          width: '14px',
+          height: '14px',
+          borderRadius: '50%',
+          cursor: 'pointer',
+        },
+        display: {
+          background: '#1a1a1a',
+          borderRadius: '10px',
+          padding: '15px',
+          marginBottom: '10px',
+          textAlign: 'right',
+          fontSize: '2rem',
+          color: 'white',
+          fontFamily: 'monospace',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        },
+        buttons: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' },
+        btn: {
+          padding: '15px',
+          fontSize: '1.2rem',
+          border: 'none',
+          borderRadius: '10px',
+          cursor: 'pointer',
+          transition: 'all 0.1s',
+          fontWeight: 'bold',
+        },
+        btnNumber: { background: '#505050', color: 'white' },
+        btnOp: { background: '#ff9f0a', color: 'white' },
+        btnFunc: { background: '#a5a5a5', color: 'black' },
+        btnZero: { gridColumn: 'span 2' },
+      };
+
+      return (
+        <div ref={calcRef} style={calcStyles.container} onMouseDown={handleMouseDown}>
+          <div style={calcStyles.header}>
+            <span style={calcStyles.title}>🧮 CALCULATRICE</span>
+            <button style={calcStyles.closeBtn} onClick={onClose}></button>
+          </div>
+          <div style={calcStyles.display}>{display}</div>
+          <div className="calc-buttons" style={calcStyles.buttons}>
+            <button style={{...calcStyles.btn, ...calcStyles.btnFunc}} onClick={clear}>C</button>
+            <button style={{...calcStyles.btn, ...calcStyles.btnFunc}} onClick={() => setDisplay(String(-parseFloat(display)))}>±</button>
+            <button style={{...calcStyles.btn, ...calcStyles.btnFunc}} onClick={() => setDisplay(String(parseFloat(display) / 100))}>%</button>
+            <button style={{...calcStyles.btn, ...calcStyles.btnOp}} onClick={() => performOperation('÷')}>÷</button>
+            
+            <button style={{...calcStyles.btn, ...calcStyles.btnNumber}} onClick={() => inputDigit('7')}>7</button>
+            <button style={{...calcStyles.btn, ...calcStyles.btnNumber}} onClick={() => inputDigit('8')}>8</button>
+            <button style={{...calcStyles.btn, ...calcStyles.btnNumber}} onClick={() => inputDigit('9')}>9</button>
+            <button style={{...calcStyles.btn, ...calcStyles.btnOp}} onClick={() => performOperation('×')}>×</button>
+            
+            <button style={{...calcStyles.btn, ...calcStyles.btnNumber}} onClick={() => inputDigit('4')}>4</button>
+            <button style={{...calcStyles.btn, ...calcStyles.btnNumber}} onClick={() => inputDigit('5')}>5</button>
+            <button style={{...calcStyles.btn, ...calcStyles.btnNumber}} onClick={() => inputDigit('6')}>6</button>
+            <button style={{...calcStyles.btn, ...calcStyles.btnOp}} onClick={() => performOperation('-')}>−</button>
+            
+            <button style={{...calcStyles.btn, ...calcStyles.btnNumber}} onClick={() => inputDigit('1')}>1</button>
+            <button style={{...calcStyles.btn, ...calcStyles.btnNumber}} onClick={() => inputDigit('2')}>2</button>
+            <button style={{...calcStyles.btn, ...calcStyles.btnNumber}} onClick={() => inputDigit('3')}>3</button>
+            <button style={{...calcStyles.btn, ...calcStyles.btnOp}} onClick={() => performOperation('+')}>+</button>
+            
+            <button style={{...calcStyles.btn, ...calcStyles.btnNumber, ...calcStyles.btnZero}} onClick={() => inputDigit('0')}>0</button>
+            <button style={{...calcStyles.btn, ...calcStyles.btnNumber}} onClick={inputDecimal}>,</button>
+            <button style={{...calcStyles.btn, ...calcStyles.btnOp}} onClick={calculate}>=</button>
+          </div>
+        </div>
+      );
+    }
+
     // Problèmes par niveau de difficulté
     const problemsByLevel = {
       debutant: [
@@ -79,6 +282,7 @@
       const [historique, setHistorique] = useState([]);
       const [problemeResolu, setProblemeResolu] = useState(false);
       const [etapesValidees, setEtapesValidees] = useState({ si: false, alors: false, donc: false });
+      const [showCalculatrice, setShowCalculatrice] = useState(false);
 
       const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -338,6 +542,24 @@ ATTENTION :
         victoireBoutons: { display: 'flex', gap: '15px', marginTop: '15px', justifyContent: 'center' },
         boutonNouveau: { background: '#4CAF50', color: 'white', border: 'none', padding: '12px 25px', borderRadius: '10px', cursor: 'pointer', fontSize: '1rem' },
         boutonNiveauSup: { background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', color: 'white', border: 'none', padding: '12px 25px', borderRadius: '10px', cursor: 'pointer', fontSize: '1rem' },
+        boutonCalculatrice: {
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          width: '60px',
+          height: '60px',
+          borderRadius: '50%',
+          background: 'linear-gradient(145deg, #2d2d2d, #1a1a1a)',
+          border: 'none',
+          fontSize: '1.8rem',
+          cursor: 'pointer',
+          boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+          zIndex: 999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          transition: 'transform 0.2s, box-shadow 0.2s',
+        },
       };
 
       // Écran d'accueil
@@ -447,6 +669,17 @@ ATTENTION :
               </div>
             </div>
           </div>
+
+          {/* Bouton flottant calculatrice */}
+          <button
+            style={styles.boutonCalculatrice}
+            onClick={() => setShowCalculatrice(!showCalculatrice)}
+            title="Calculatrice"
+          >
+            🧮
+          </button>
+          {showCalculatrice && <Calculatrice onClose={() => setShowCalculatrice(false)} />}
+        </div>
         );
       }
 
@@ -479,6 +712,16 @@ ATTENTION :
                 ← Retour à l'accueil
               </button>
             </div>
+
+            {/* Bouton flottant calculatrice */}
+            <button
+              style={styles.boutonCalculatrice}
+              onClick={() => setShowCalculatrice(!showCalculatrice)}
+              title="Calculatrice"
+            >
+              🧮
+            </button>
+            {showCalculatrice && <Calculatrice onClose={() => setShowCalculatrice(false)} />}
           </div>
         );
       }
@@ -644,6 +887,18 @@ ATTENTION :
               </div>
             </div>
           )}
+
+          {/* Bouton flottant calculatrice */}
+          <button
+            style={styles.boutonCalculatrice}
+            onClick={() => setShowCalculatrice(!showCalculatrice)}
+            title="Calculatrice"
+          >
+            🧮
+          </button>
+
+          {/* Calculatrice */}
+          {showCalculatrice && <Calculatrice onClose={() => setShowCalculatrice(false)} />}
         </div>
       );
     }
