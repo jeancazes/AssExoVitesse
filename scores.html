@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tableau de bord - Scores des élèves</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+    
+    .header h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .header p {
+      opacity: 0.9;
+    }
+    
+    .actions {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      padding: 12px 25px;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .btn:hover {
+      transform: scale(1.05);
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+      box-shadow: 0 4px 15px rgba(240,147,251,0.4);
+    }
+    
+    .btn-secondary {
+      background: white;
+      color: #667eea;
+    }
+    
+    .btn-success {
+      background: #4CAF50;
+      color: white;
+    }
+    
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 25px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+    
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+    
+    .stat-box {
+      background: linear-gradient(135deg, #f5f7fa 0%, #e8eaed 100%);
+      padding: 20px;
+      border-radius: 15px;
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #667eea;
+    }
+    
+    .stat-label {
+      color: #666;
+      font-size: 0.9rem;
+      margin-top: 5px;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    
+    th, td {
+      padding: 15px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    
+    th {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-weight: 600;
+    }
+    
+    th:first-child {
+      border-radius: 10px 0 0 0;
+    }
+    
+    th:last-child {
+      border-radius: 0 10px 0 0;
+    }
+    
+    tr:hover {
+      background: #f8f9fa;
+    }
+    
+    .rank {
+      font-weight: bold;
+      color: #667eea;
+    }
+    
+    .rank-1 { color: #FFD700; }
+    .rank-2 { color: #C0C0C0; }
+    .rank-3 { color: #CD7F32; }
+    
+    .stars {
+      color: #FFD700;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+    
+    .empty-state span {
+      font-size: 3rem;
+      display: block;
+      margin-bottom: 15px;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+    
+    .refresh-time {
+      text-align: center;
+      color: rgba(255,255,255,0.7);
+      font-size: 0.85rem;
+      margin-top: 20px;
+    }
+    
+    .back-link {
+      display: inline-block;
+      color: white;
+      text-decoration: none;
+      margin-bottom: 20px;
+      opacity: 0.9;
+    }
+    
+    .back-link:hover {
+      opacity: 1;
+    }
+    
+    @media (max-width: 600px) {
+      th, td {
+        padding: 10px 8px;
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="/" class="back-link">← Retour à l'application</a>
+    
+    <div class="header">
+      <h1>📊 Tableau de bord</h1>
+      <p>Suivi des scores des élèves</p>
+    </div>
+    
+    <div class="actions">
+      <button class="btn btn-primary" onclick="refreshScores()">🔄 Actualiser</button>
+      <button class="btn btn-success" onclick="downloadCSV()">📥 Télécharger CSV</button>
+      <button class="btn btn-secondary" onclick="resetScores()">🗑️ Réinitialiser</button>
+    </div>
+    
+    <div class="card">
+      <div class="stats" id="stats">
+        <div class="stat-box">
+          <div class="stat-value" id="totalEleves">-</div>
+          <div class="stat-label">Élèves</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="totalEtoiles">-</div>
+          <div class="stat-label">Étoiles totales</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="totalProblemes">-</div>
+          <div class="stat-label">Problèmes résolus</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="moyenneEtoiles">-</div>
+          <div class="stat-label">Moyenne / élève</div>
+        </div>
+      </div>
+      
+      <div id="tableContainer">
+        <div class="loading">⏳ Chargement des scores...</div>
+      </div>
+    </div>
+    
+    <p class="refresh-time" id="refreshTime"></p>
+  </div>
+
+  <script>
+    let scoresData = {};
+    
+    async function refreshScores() {
+      const container = document.getElementById('tableContainer');
+      container.innerHTML = '<div class="loading">⏳ Chargement des scores...</div>';
+      
+      try {
+        const response = await fetch('/api/scores');
+        const data = await response.json();
+        
+        if (data.success) {
+          scoresData = data.scores;
+          displayScores(data.scores);
+          updateStats(data.scores);
+          document.getElementById('refreshTime').textContent = 
+            `Dernière actualisation : ${new Date().toLocaleString('fr-FR')}`;
+        }
+      } catch (error) {
+        console.error('Erreur:', error);
+        container.innerHTML = '<div class="empty-state"><span>❌</span><p>Erreur de chargement</p></div>';
+      }
+    }
+    
+    function displayScores(scores) {
+      const container = document.getElementById('tableContainer');
+      const scoresArray = Object.values(scores);
+      
+      if (scoresArray.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <span>📝</span>
+            <p>Aucun score enregistré pour le moment.</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">Les scores apparaîtront ici quand les élèves commenceront à utiliser l'application.</p>
+          </div>
+        `;
+        return;
+      }
+      
+      // Trier par étoiles (décroissant)
+      scoresArray.sort((a, b) => b.etoiles - a.etoiles);
+      
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Prénom</th>
+              <th>⭐ Étoiles</th>
+              <th>📝 Problèmes</th>
+              <th>💪 Sans aide</th>
+              <th>📅 Dernière activité</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      
+      scoresArray.forEach((score, index) => {
+        const rank = index + 1;
+        const rankClass = rank <= 3 ? `rank-${rank}` : '';
+        const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+        const date = score.lastUpdate ? new Date(score.lastUpdate).toLocaleDateString('fr-FR') : '-';
+        
+        html += `
+          <tr>
+            <td class="rank ${rankClass}">${medal}</td>
+            <td><strong>${escapeHtml(score.prenom)}</strong></td>
+            <td class="stars">${score.etoiles} ⭐</td>
+            <td>${score.problemesResolus}</td>
+            <td>${score.sanAide}</td>
+            <td>${date}</td>
+          </tr>
+        `;
+      });
+      
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    }
+    
+    function updateStats(scores) {
+      const scoresArray = Object.values(scores);
+      const totalEleves = scoresArray.length;
+      const totalEtoiles = scoresArray.reduce((sum, s) => sum + (s.etoiles || 0), 0);
+      const totalProblemes = scoresArray.reduce((sum, s) => sum + (s.problemesResolus || 0), 0);
+      const moyenne = totalEleves > 0 ? (totalEtoiles / totalEleves).toFixed(1) : 0;
+      
+      document.getElementById('totalEleves').textContent = totalEleves;
+      document.getElementById('totalEtoiles').textContent = totalEtoiles;
+      document.getElementById('totalProblemes').textContent = totalProblemes;
+      document.getElementById('moyenneEtoiles').textContent = moyenne;
+    }
+    
+    function downloadCSV() {
+      window.location.href = '/api/scores?format=csv';
+    }
+    
+    async function resetScores() {
+      if (!confirm('⚠️ Êtes-vous sûr de vouloir réinitialiser tous les scores ?\n\nCette action est irréversible.')) {
+        return;
+      }
+      
+      // Pour la réinitialisation, on peut simplement vider le localStorage côté serveur
+      // Note: Sur Vercel, les données /tmp sont déjà éphémères
+      alert('Pour réinitialiser les scores, redéployez l\'application sur Vercel.\n\nLes scores locaux des élèves seront conservés sur leurs appareils.');
+    }
+    
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+    
+    // Charger les scores au démarrage
+    refreshScores();
+    
+    // Actualiser automatiquement toutes les 30 secondes
+    setInterval(refreshScores, 30000);
+  </script>
+</body>
+</html>

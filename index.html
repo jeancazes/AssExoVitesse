@@ -247,13 +247,56 @@
       const [inputValue, setInputValue] = useState('');
       const [isLoading, setIsLoading] = useState(false);
       const [score, setScore] = useState({ etoiles: 0, problemesResolus: 0, sanAide: 0 });
-      const [etape, setEtape] = useState('accueil');
+      const [etape, setEtape] = useState('connexion'); // Commence par connexion
       const [aideUtilisee, setAideUtilisee] = useState(false);
       const messagesEndRef = useRef(null);
       const [historique, setHistorique] = useState([]);
       const [problemeResolu, setProblemeResolu] = useState(false);
       const [etapesValidees, setEtapesValidees] = useState({ si: false, alors: false, donc: false });
       const [showCalc, setShowCalc] = useState(false);
+      const [prenomEleve, setPrenomEleve] = useState('');
+      const [inputPrenom, setInputPrenom] = useState('');
+
+      // Charger les données sauvegardées au démarrage
+      useEffect(() => {
+        const savedData = localStorage.getItem('vitesse_eleve');
+        if (savedData) {
+          const data = JSON.parse(savedData);
+          setPrenomEleve(data.prenom);
+          setScore(data.score || { etoiles: 0, problemesResolus: 0, sanAide: 0 });
+          setEtape('accueil');
+        }
+      }, []);
+
+      // Sauvegarder les scores à chaque changement
+      useEffect(() => {
+        if (prenomEleve) {
+          const data = { prenom: prenomEleve, score, lastUpdate: new Date().toISOString() };
+          localStorage.setItem('vitesse_eleve', JSON.stringify(data));
+          // Envoyer au serveur
+          fetch('/api/scores', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          }).catch(err => console.log('Erreur sync scores:', err));
+        }
+      }, [score, prenomEleve]);
+
+      const connexion = () => {
+        if (inputPrenom.trim().length >= 2) {
+          const prenom = inputPrenom.trim();
+          setPrenomEleve(prenom);
+          setEtape('accueil');
+        }
+      };
+
+      const deconnexion = () => {
+        localStorage.removeItem('vitesse_eleve');
+        setPrenomEleve('');
+        setScore({ etoiles: 0, problemesResolus: 0, sanAide: 0 });
+        setEtape('connexion');
+        setInputPrenom('');
+      };
 
       const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -299,6 +342,9 @@
         try {
           const systemPrompt = `Tu es un assistant d'éducation chaleureux et bienveillant qui aide des élèves de 10-12 ans à résoudre des problèmes de vitesse, distance et durée.
 
+PRÉNOM DE L'ÉLÈVE: ${prenomEleve}
+IMPORTANT: Utilise le prénom "${prenomEleve}" pour t'adresser à l'élève de manière personnalisée et chaleureuse.
+
 PROBLÈME ACTUEL: ${probleme.enonce}
 RÉPONSE ATTENDUE: ${probleme.reponse} ${probleme.unite_reponse}
 NIVEAU: ${niveau}
@@ -318,19 +364,20 @@ FORMULES:
 
 TON RÔLE:
 ${niveau === 'debutant' ? `
-- Guide l'élève PAS À PAS à travers chaque étape de la méthode
-- Si l'élève n'a pas commencé par "Si...", encourage-le gentiment à le faire
+- Guide ${prenomEleve} PAS À PAS à travers chaque étape de la méthode
+- Si ${prenomEleve} n'a pas commencé par "Si...", encourage-le gentiment à le faire
 - Félicite chaque bonne étape, même partielle
-- Donne des indices si l'élève bloque, mais ne donne JAMAIS la réponse directement
+- Donne des indices si ${prenomEleve} bloque, mais ne donne JAMAIS la réponse directement
 - Utilise des émojis pour rendre tes messages plus chaleureux 😊
 ` : `
-- Laisse l'élève plus autonome mais reste disponible pour aider
+- Laisse ${prenomEleve} plus autonome mais reste disponible pour aider
 - Corrige les erreurs avec bienveillance
-- Encourage l'élève à vérifier ses unités de mesure
+- Encourage ${prenomEleve} à vérifier ses unités de mesure
 `}
 
 RÈGLES IMPORTANTES:
 - Parle avec chaleur, comme un grand frère/grande sœur bienveillant(e)
+- Utilise le prénom "${prenomEleve}" régulièrement pour personnaliser tes réponses
 - Utilise un langage simple adapté à des enfants de 10-12 ans
 - Ne donne JAMAIS la réponse complète directement
 - Valorise les efforts, même si la réponse n'est pas parfaite
@@ -338,15 +385,15 @@ RÈGLES IMPORTANTES:
 SYSTÈME DE VALIDATION PAR ÉTAPES :
 Tu dois valider chaque étape séparément et utiliser des marqueurs spécifiques pour que l'élève gagne des étoiles :
 
-1. Quand l'élève écrit correctement le "Si..." avec les bonnes données (${probleme.type === 'vitesse' ? `distance: ${probleme.distance} ${probleme.unite_distance}, temps: ${probleme.temps} ${probleme.unite_temps}` : probleme.type === 'distance' ? `vitesse: ${probleme.vitesse} ${probleme.unite_vitesse}, temps: ${probleme.temps} ${probleme.unite_temps}` : `les données du problème`}), réponds avec "⭐ ÉTAPE SI VALIDÉE !" puis encourage-le à continuer avec "Alors comme..."
+1. Quand ${prenomEleve} écrit correctement le "Si..." avec les bonnes données (${probleme.type === 'vitesse' ? `distance: ${probleme.distance} ${probleme.unite_distance}, temps: ${probleme.temps} ${probleme.unite_temps}` : probleme.type === 'distance' ? `vitesse: ${probleme.vitesse} ${probleme.unite_vitesse}, temps: ${probleme.temps} ${probleme.unite_temps}` : `les données du problème`}), réponds avec "⭐ ÉTAPE SI VALIDÉE !" puis encourage-le à continuer avec "Alors comme..."
 
-2. Quand l'élève écrit correctement le "Alors comme..." avec la bonne formule et le bon calcul, réponds avec "⭐ ÉTAPE ALORS VALIDÉE !" puis encourage-le à conclure avec "Donc..."
+2. Quand ${prenomEleve} écrit correctement le "Alors comme..." avec la bonne formule et le bon calcul, réponds avec "⭐ ÉTAPE ALORS VALIDÉE !" puis encourage-le à conclure avec "Donc..."
 
-3. Quand l'élève écrit correctement le "Donc..." avec une phrase complète contenant la réponse ${probleme.reponse} ${probleme.unite_reponse}, réponds avec "🎉 BRAVO ! EXERCICE RÉUSSI !" et félicite-le chaleureusement.
+3. Quand ${prenomEleve} écrit correctement le "Donc..." avec une phrase complète contenant la réponse ${probleme.reponse} ${probleme.unite_reponse}, réponds avec "🎉 BRAVO ${prenomEleve.toUpperCase()} ! EXERCICE RÉUSSI !" et félicite-le chaleureusement.
 
 ATTENTION :
 - N'utilise ces marqueurs QUE quand l'étape est CORRECTE
-- Si l'élève fait une erreur, aide-le gentiment sans utiliser les marqueurs
+- Si ${prenomEleve} fait une erreur, aide-le gentiment sans utiliser les marqueurs
 - Ne propose JAMAIS de nouveau problème, les boutons s'afficheront automatiquement à la fin
 - L'élève peut écrire plusieurs étapes d'un coup, dans ce cas valide toutes les étapes correctes`;
 
@@ -514,13 +561,59 @@ ATTENTION :
         boutonNouveau: { background: '#4CAF50', color: 'white', border: 'none', padding: '12px 25px', borderRadius: '10px', cursor: 'pointer', fontSize: '1rem' },
         boutonNiveauSup: { background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', color: 'white', border: 'none', padding: '12px 25px', borderRadius: '10px', cursor: 'pointer', fontSize: '1rem' },
         calcBtn: { position: 'fixed', bottom: '20px', right: '20px', width: '56px', height: '56px', borderRadius: '50%', background: '#1c1c1e', border: 'none', fontSize: '1.6rem', cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,0,0,0.3)', zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center' },
+        connexionBox: { background: 'white', borderRadius: '25px', padding: '40px', maxWidth: '450px', margin: '0 auto', boxShadow: '0 20px 60px rgba(0,0,0,0.3)', textAlign: 'center' },
+        inputPrenom: { width: '100%', padding: '15px 20px', fontSize: '1.2rem', border: '3px solid #e0e0e0', borderRadius: '15px', marginBottom: '20px', textAlign: 'center', fontFamily: 'inherit' },
+        btnConnexion: { background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', border: 'none', padding: '15px 40px', fontSize: '1.2rem', borderRadius: '50px', cursor: 'pointer', width: '100%' },
+        userBadge: { position: 'absolute', top: '20px', right: '20px', background: 'rgba(255,255,255,0.2)', padding: '8px 15px', borderRadius: '20px', color: 'white', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px' },
+        decoBtn: { background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', fontSize: '0.8rem', marginLeft: '10px' },
       };
+
+      // Écran de connexion
+      if (etape === 'connexion') {
+        return (
+          <div style={styles.container}>
+            <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '20px' }}>
+              <div style={styles.connexionBox}>
+                <span style={{ fontSize: '60px', display: 'block', marginBottom: '20px' }}>👋</span>
+                <h1 style={{ color: '#667eea', marginBottom: '10px' }}>Bienvenue !</h1>
+                <p style={{ color: '#666', marginBottom: '30px' }}>Comment t'appelles-tu ?</p>
+                
+                <input
+                  type="text"
+                  style={styles.inputPrenom}
+                  placeholder="Ton prénom..."
+                  value={inputPrenom}
+                  onChange={(e) => setInputPrenom(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && connexion()}
+                  autoFocus
+                />
+                
+                <button 
+                  style={{...styles.btnConnexion, opacity: inputPrenom.trim().length < 2 ? 0.5 : 1}}
+                  onClick={connexion}
+                  disabled={inputPrenom.trim().length < 2}
+                >
+                  C'est parti ! 🚀
+                </button>
+                
+                <p style={{ color: '#999', fontSize: '0.85rem', marginTop: '20px' }}>
+                  Ton prénom sera utilisé pour te saluer et sauvegarder tes progrès.
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      }
 
       // Écran d'accueil
       if (etape === 'accueil') {
         return (
           <React.Fragment>
           <div style={styles.container}>
+            <div style={styles.userBadge}>
+              👤 {prenomEleve}
+              <button style={styles.decoBtn} onClick={deconnexion} title="Changer d'utilisateur">✕</button>
+            </div>
             <div style={styles.accueil}>
               <div style={styles.logoContainer}>
                 <span style={styles.logo}>🚀</span>
@@ -530,7 +623,7 @@ ATTENTION :
               
               <div style={{ marginBottom: '30px' }}>
                 <div style={styles.bulle}>
-                  <p>Salut ! Je suis là pour t'aider à résoudre des problèmes de vitesse, distance et durée. On va apprendre ensemble la méthode magique :</p>
+                  <p>Salut <strong>{prenomEleve}</strong> ! 👋 Je suis là pour t'aider à résoudre des problèmes de vitesse, distance et durée. On va apprendre ensemble la méthode magique :</p>
                   <p style={styles.methode}><strong>Si... Alors... Donc...</strong></p>
                   <p>Prêt(e) à devenir un(e) champion(ne) ? 🏆</p>
                 </div>
@@ -635,8 +728,12 @@ ATTENTION :
         return (
           <React.Fragment>
           <div style={styles.container}>
+            <div style={styles.userBadge}>
+              👤 {prenomEleve}
+              <button style={styles.decoBtn} onClick={deconnexion} title="Changer d'utilisateur">✕</button>
+            </div>
             <div style={styles.choixNiveau}>
-              <h2 style={styles.titreNiveau}>Choisis ton niveau ! 🎯</h2>
+              <h2 style={styles.titreNiveau}>{prenomEleve}, choisis ton niveau ! 🎯</h2>
               
               <div style={styles.scoreDisplay}>
                 <span>⭐ {score.etoiles} étoiles</span>
