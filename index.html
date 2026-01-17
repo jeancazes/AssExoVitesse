@@ -254,6 +254,73 @@
       const [problemeResolu, setProblemeResolu] = useState(false);
       const [etapesValidees, setEtapesValidees] = useState({ si: false, alors: false, donc: false });
       const [showCalc, setShowCalc] = useState(false);
+      const [speaking, setSpeaking] = useState(false);
+      const [currentSpeakingIndex, setCurrentSpeakingIndex] = useState(null);
+
+      // Fonction de synthèse vocale
+      const parler = (texte, index) => {
+        // Arrêter si déjà en train de parler
+        if (window.speechSynthesis.speaking) {
+          window.speechSynthesis.cancel();
+          if (currentSpeakingIndex === index) {
+            setSpeaking(false);
+            setCurrentSpeakingIndex(null);
+            return;
+          }
+        }
+
+        // Nettoyer le texte (enlever les emojis et caractères spéciaux pour une meilleure lecture)
+        const texteNettoye = texte
+          .replace(/[🎉⭐💪😊👋🏆📝🔄🚀✨💡❓✅⬜•→←]/g, '')
+          .replace(/\n+/g, '. ')
+          .replace(/\s+/g, ' ')
+          .trim();
+
+        const utterance = new SpeechSynthesisUtterance(texteNettoye);
+        utterance.lang = 'fr-FR';
+        utterance.rate = 1;      // Vitesse normale
+        utterance.pitch = 1.1;   // Légèrement plus aigu pour être chaleureux
+        utterance.volume = 1;
+
+        // Chercher une voix française naturelle
+        const voix = window.speechSynthesis.getVoices();
+        const voixFrancaise = voix.find(v => 
+          v.lang.startsWith('fr') && (
+            v.name.includes('Google') ||
+            v.name.includes('Natural') ||
+            v.name.includes('Premium') ||
+            v.name.includes('Amelie') ||
+            v.name.includes('Thomas') ||
+            v.name.includes('Audrey')
+          )
+        ) || voix.find(v => v.lang.startsWith('fr'));
+        
+        if (voixFrancaise) {
+          utterance.voice = voixFrancaise;
+        }
+
+        utterance.onstart = () => {
+          setSpeaking(true);
+          setCurrentSpeakingIndex(index);
+        };
+
+        utterance.onend = () => {
+          setSpeaking(false);
+          setCurrentSpeakingIndex(null);
+        };
+
+        utterance.onerror = () => {
+          setSpeaking(false);
+          setCurrentSpeakingIndex(null);
+        };
+
+        window.speechSynthesis.speak(utterance);
+      };
+
+      // Charger les voix au démarrage
+      useEffect(() => {
+        window.speechSynthesis.getVoices();
+      }, []);
       const [prenomEleve, setPrenomEleve] = useState('');
       const [inputPrenom, setInputPrenom] = useState('');
 
@@ -566,6 +633,27 @@ ATTENTION :
         btnConnexion: { background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', border: 'none', padding: '15px 40px', fontSize: '1.2rem', borderRadius: '50px', cursor: 'pointer', width: '100%' },
         userBadge: { position: 'absolute', top: '20px', right: '20px', background: 'rgba(255,255,255,0.2)', padding: '8px 15px', borderRadius: '20px', color: 'white', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px' },
         decoBtn: { background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', fontSize: '0.8rem', marginLeft: '10px' },
+        btnVoix: { 
+          background: 'transparent', 
+          border: '2px solid #ddd', 
+          borderRadius: '50%', 
+          width: '32px', 
+          height: '32px', 
+          cursor: 'pointer', 
+          fontSize: '0.9rem', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          marginLeft: '8px',
+          flexShrink: 0,
+          transition: 'all 0.2s ease',
+          opacity: 0.6
+        },
+        btnVoixActive: {
+          background: '#667eea',
+          borderColor: '#667eea',
+          opacity: 1
+        },
       };
 
       // Écran de connexion
@@ -820,6 +908,18 @@ ATTENTION :
                         <p key={i} style={styles.messageLine}>{line}</p>
                       ))}
                     </div>
+                    {msg.role === 'assistant' && (
+                      <button
+                        style={{
+                          ...styles.btnVoix,
+                          ...(currentSpeakingIndex === index ? styles.btnVoixActive : {})
+                        }}
+                        onClick={() => parler(msg.content, index)}
+                        title={currentSpeakingIndex === index ? "Arrêter" : "Écouter"}
+                      >
+                        {currentSpeakingIndex === index ? '⏹️' : '🔊'}
+                      </button>
+                    )}
                     {msg.role === 'user' && <span style={styles.avatar}>👤</span>}
                   </div>
                 ))}
