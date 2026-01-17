@@ -254,72 +254,89 @@
       const [problemeResolu, setProblemeResolu] = useState(false);
       const [etapesValidees, setEtapesValidees] = useState({ si: false, alors: false, donc: false });
       const [showCalc, setShowCalc] = useState(false);
-      const [speaking, setSpeaking] = useState(false);
       const [currentSpeakingIndex, setCurrentSpeakingIndex] = useState(null);
+      const synthRef = useRef(window.speechSynthesis);
 
       // Fonction de synthèse vocale
       const parler = (texte, index) => {
-        // Arrêter si déjà en train de parler
-        if (window.speechSynthesis.speaking) {
-          window.speechSynthesis.cancel();
-          if (currentSpeakingIndex === index) {
-            setSpeaking(false);
-            setCurrentSpeakingIndex(null);
-            return;
-          }
+        const synth = synthRef.current;
+        
+        // Si on clique sur le même message en cours de lecture, on arrête
+        if (currentSpeakingIndex === index) {
+          synth.cancel();
+          setCurrentSpeakingIndex(null);
+          return;
         }
+
+        // Arrêter toute lecture en cours
+        synth.cancel();
 
         // Nettoyer le texte (enlever les emojis et caractères spéciaux pour une meilleure lecture)
         const texteNettoye = texte
-          .replace(/[🎉⭐💪😊👋🏆📝🔄🚀✨💡❓✅⬜•→←]/g, '')
+          .replace(/[\u{1F300}-\u{1F9FF}]/gu, '') // Enlever tous les emojis
+          .replace(/[•→←]/g, '')
           .replace(/\n+/g, '. ')
           .replace(/\s+/g, ' ')
           .trim();
 
-        const utterance = new SpeechSynthesisUtterance(texteNettoye);
-        utterance.lang = 'fr-FR';
-        utterance.rate = 1;      // Vitesse normale
-        utterance.pitch = 1.1;   // Légèrement plus aigu pour être chaleureux
-        utterance.volume = 1;
+        const lancerLecture = () => {
+          const utterance = new SpeechSynthesisUtterance(texteNettoye);
+          utterance.lang = 'fr-FR';
+          utterance.rate = 1;
+          utterance.pitch = 1.1;
+          utterance.volume = 1;
 
-        // Chercher une voix française naturelle
-        const voix = window.speechSynthesis.getVoices();
-        const voixFrancaise = voix.find(v => 
-          v.lang.startsWith('fr') && (
-            v.name.includes('Google') ||
-            v.name.includes('Natural') ||
-            v.name.includes('Premium') ||
-            v.name.includes('Amelie') ||
-            v.name.includes('Thomas') ||
-            v.name.includes('Audrey')
-          )
-        ) || voix.find(v => v.lang.startsWith('fr'));
-        
-        if (voixFrancaise) {
-          utterance.voice = voixFrancaise;
-        }
+          // Chercher une voix française naturelle
+          const voix = synth.getVoices();
+          const voixFrancaise = voix.find(v => 
+            v.lang.startsWith('fr') && (
+              v.name.includes('Google') ||
+              v.name.includes('Natural') ||
+              v.name.includes('Premium') ||
+              v.name.includes('Amelie') ||
+              v.name.includes('Thomas') ||
+              v.name.includes('Audrey')
+            )
+          ) || voix.find(v => v.lang.startsWith('fr'));
+          
+          if (voixFrancaise) {
+            utterance.voice = voixFrancaise;
+          }
 
-        utterance.onstart = () => {
-          setSpeaking(true);
-          setCurrentSpeakingIndex(index);
+          // Stocker l'index localement pour éviter les problèmes de closure
+          const currentIndex = index;
+
+          utterance.onstart = () => {
+            setCurrentSpeakingIndex(currentIndex);
+          };
+
+          utterance.onend = () => {
+            setCurrentSpeakingIndex(null);
+          };
+
+          utterance.onerror = (e) => {
+            if (e.error !== 'interrupted' && e.error !== 'canceled') {
+              console.log('Erreur TTS:', e.error);
+              setCurrentSpeakingIndex(null);
+            }
+          };
+
+          synth.speak(utterance);
         };
 
-        utterance.onend = () => {
-          setSpeaking(false);
-          setCurrentSpeakingIndex(null);
-        };
-
-        utterance.onerror = () => {
-          setSpeaking(false);
-          setCurrentSpeakingIndex(null);
-        };
-
-        window.speechSynthesis.speak(utterance);
+        // Délai pour permettre au cancel() de se terminer proprement
+        setTimeout(lancerLecture, 150);
       };
 
-      // Charger les voix au démarrage
+      // Charger les voix au démarrage (nécessaire pour certains navigateurs)
       useEffect(() => {
-        window.speechSynthesis.getVoices();
+        const loadVoices = () => {
+          synthRef.current.getVoices();
+        };
+        loadVoices();
+        if (synthRef.current.onvoiceschanged !== undefined) {
+          synthRef.current.onvoiceschanged = loadVoices;
+        }
       }, []);
       const [prenomEleve, setPrenomEleve] = useState('');
       const [inputPrenom, setInputPrenom] = useState('');
