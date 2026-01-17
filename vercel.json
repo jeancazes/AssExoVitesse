@@ -1,5 +1,11 @@
 {
-  "buildCommand": "echo 'No build needed'",
-  "outputDirectory": ".",
-  "framework": null
+  "buildCommand": "npm run build",
+  "outputDirectory": "build",
+  "devCommand": "npm start",
+  "installCommand": "npm install",
+  "framework": "create-react-app",
+  "regions": ["cdg1"],
+  "env": {
+    "ANTHROPIC_API_KEY": "@anthropic_api_key"
+  }
 }

@@ -1,85 +1,160 @@
-# 🚀 Vitesse App - Application éducative
+# Exercices Vitesse - Application Interactive
 
-Application pour apprendre les calculs de vitesse, distance et durée avec la méthode "Si... Alors... Donc..."
+Application éducative pour aider les élèves de 10-12 ans à apprendre les calculs de vitesse, distance et durée avec la méthode "Si... Alors... Donc...".
 
-## ✨ Fonctionnalités
+## 🚀 Fonctionnalités
 
-- **Connexion personnalisée** : Chaque élève entre son prénom
-- **4 niveaux** : Débutant, Apprenti, Maître, Expert
-- **48 exercices variés** : 12 par niveau avec des thèmes différents
-- **Assistant IA** : Guide l'élève en utilisant son prénom
-- **Système d'étoiles** : Récompense chaque étape
-- **Calculatrice flottante** : Accessible à tout moment
-- **Sauvegarde automatique** : Progrès sauvegardés localement
-- **Tableau de bord** : Suivi des scores pour l'enseignant
+- 4 niveaux de difficulté progressifs
+- Assistant IA personnalisé (Claude)
+- Synthèse vocale pour l'accessibilité
+- Système de gamification avec étoiles
+- Validation par étapes de la méthode pédagogique
+- Interface colorée et engageante
+
+## 📋 Prérequis
+
+- Node.js 16+ installé
+- Compte Vercel (gratuit)
+- Clé API Anthropic ([obtenir une clé](https://console.anthropic.com/))
+
+## 🛠️ Installation locale
+
+1. **Extraire le ZIP et naviguer dans le dossier**
+   ```bash
+   cd exercices-vitesse
+   ```
+
+2. **Installer les dépendances**
+   ```bash
+   npm install
+   ```
+
+3. **Créer un fichier `.env.local`** à la racine du projet
+   ```
+   ANTHROPIC_API_KEY=votre_clé_api_ici
+   ```
+
+4. **Lancer en développement**
+   ```bash
+   npm start
+   ```
+   
+   L'application sera accessible sur http://localhost:3000
+
+## 🌐 Déploiement sur Vercel
+
+### Méthode 1 : Via GitHub (Recommandée)
+
+1. **Créer un repository GitHub**
+   - Allez sur github.com et créez un nouveau repository
+   - Ne pas initialiser avec README, .gitignore ou licence
+
+2. **Pousser le code**
+   ```bash
+   git init
+   git add .
+   git commit -m "Initial commit"
+   git branch -M main
+   git remote add origin https://github.com/votre-username/exercices-vitesse.git
+   git push -u origin main
+   ```
+
+3. **Déployer sur Vercel**
+   - Allez sur [vercel.com](https://vercel.com)
+   - Cliquez sur "Add New Project"
+   - Importez votre repository GitHub
+   - Ajoutez la variable d'environnement :
+     - **Name:** `ANTHROPIC_API_KEY`
+     - **Value:** votre clé API Anthropic
+   - Cliquez sur "Deploy"
+
+### Méthode 2 : Via CLI Vercel
+
+1. **Installer Vercel CLI**
+   ```bash
+   npm install -g vercel
+   ```
+
+2. **Se connecter**
+   ```bash
+   vercel login
+   ```
+
+3. **Déployer**
+   ```bash
+   vercel
+   ```
+
+4. **Ajouter la variable d'environnement**
+   ```bash
+   vercel env add ANTHROPIC_API_KEY
+   ```
+   - Entrez votre clé API quand demandé
+   - Sélectionnez : Production, Preview, Development
+
+5. **Redéployer avec les variables**
+   ```bash
+   vercel --prod
+   ```
+
+## 🔐 Sécurité
+
+✅ **Configuration sécurisée** : Cette application utilise une API backend (`/api/chat.js`) pour protéger votre clé API Anthropic. La clé n'est **jamais exposée** côté client.
+
+⚠️ **Important** : 
+- Ne commitez JAMAIS le fichier `.env.local` dans Git (déjà exclu via `.gitignore`)
+- Ajoutez toujours `ANTHROPIC_API_KEY` dans les variables d'environnement Vercel
 
 ## 📁 Structure du projet
 
 ```
-vitesse-vercel/
-├── index.html       ← Application principale
-├── scores.html      ← Tableau de bord enseignant
+exercices-vitesse/
 ├── api/
-│   ├── chat.js      ← API pour Claude
-│   └── scores.js    ← API pour les scores
-├── package.json
-├── vercel.json
-└── README.md
+│   └── chat.js              # API backend sécurisée
+├── public/
+│   └── index.html           # Template HTML
+├── src/
+│   ├── App.js               # Composant principal
+│   ├── index.js             # Point d'entrée React
+│   └── index.css            # Styles globaux
+├── .gitignore               # Fichiers à ignorer
+├── package.json             # Dépendances
+└── README.md                # Ce fichier
 ```
 
-## 🔧 Déploiement sur Vercel
+## 🎨 Personnalisation
 
-### 1. Mettre sur GitHub
+Vous pouvez facilement personnaliser :
 
-1. Crée un nouveau repo sur github.com
-2. Upload tous les fichiers (garde la structure avec le dossier `api/`)
+- **Problèmes** : Modifiez `problemsByLevel` dans `src/App.js`
+- **Couleurs** : Ajustez l'objet `styles` en bas de `src/App.js`
+- **Niveaux** : Ajoutez/modifiez les niveaux dans la constante `niveaux`
 
-### 2. Déployer sur Vercel
+## 🐛 Dépannage
 
-1. Va sur [vercel.com](https://vercel.com) → "Add New Project"
-2. Importe ton repo GitHub
-3. **AVANT de cliquer Deploy** :
-   - Ouvre "Environment Variables"
-   - Ajoute : `ANTHROPIC_API_KEY` = ta clé `sk-ant-...`
-4. Clique Deploy
+### L'API ne répond pas
+- Vérifiez que `ANTHROPIC_API_KEY` est bien configurée dans Vercel
+- Consultez les logs Vercel pour voir les erreurs
 
-### 3. C'est prêt !
+### La synthèse vocale ne fonctionne pas
+- Assurez-vous d'utiliser un navigateur moderne (Chrome, Safari, Firefox)
+- Vérifiez que la langue française est disponible sur votre système
 
-## 🔗 URLs de ton application
+### Erreur de build
+- Supprimez `node_modules` et `package-lock.json`
+- Réinstallez : `npm install`
 
-| Page | URL |
-|------|-----|
-| Application | `https://ton-projet.vercel.app/` |
-| Tableau de bord | `https://ton-projet.vercel.app/scores.html` |
-| Scores (JSON) | `https://ton-projet.vercel.app/api/scores` |
-| Scores (CSV) | `https://ton-projet.vercel.app/api/scores?format=csv` |
+## 📝 Licence
 
-## 📊 Tableau de bord enseignant
+Ce projet est destiné à un usage éducatif.
 
-Pour voir les scores de tous les élèves :
-1. Va sur `https://ton-projet.vercel.app/scores.html`
-2. Tu verras le classement avec étoiles, problèmes résolus, etc.
-3. Tu peux télécharger un fichier CSV pour Excel
+## 👥 Support
 
-## 💡 Utilisation en classe
+Pour toute question ou problème :
+1. Vérifiez ce README
+2. Consultez la [documentation Vercel](https://vercel.com/docs)
+3. Consultez la [documentation Anthropic](https://docs.anthropic.com/)
 
-1. Partage le lien de l'application aux élèves
-2. Chaque élève entre son prénom à la première connexion
-3. Les scores sont automatiquement sauvegardés
-4. Consulte le tableau de bord pour suivre les progrès
+---
 
-## ⚠️ Note sur les scores
-
-- **Sur l'appareil de l'élève** : sauvegarde permanente (localStorage)
-- **Sur le serveur** : peut être réinitialisé lors des mises à jour
-
-## 🔧 Dépannage
-
-**Page blanche ?**
-→ Vérifie que `index.html` est à la RACINE du repo
-
-**Pas de réponse de l'IA ?**
-→ Vérifie `ANTHROPIC_API_KEY` dans Vercel → Settings → Environment Variables
-
-**Pour voir les erreurs :**
-→ Vercel Dashboard → ton projet → Deployments → Logs
+**Bon déploiement ! 🎉**
