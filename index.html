@@ -449,6 +449,12 @@ RÈGLES IMPORTANTES:
 - Ne donne JAMAIS la réponse complète directement
 - Valorise les efforts, même si la réponse n'est pas parfaite
 
+CALCULATRICE:
+- Une calculatrice est disponible via le bouton 🧮 en bas à droite de l'écran
+- Si ${prenomEleve} fait une ERREUR DE CALCUL (mauvais résultat numérique), rappelle-lui gentiment qu'il peut utiliser la calculatrice 🧮 pour vérifier ses calculs
+- Exemple : "Hmm, je crois qu'il y a une petite erreur dans ton calcul... 🤔 N'hésite pas à utiliser la calculatrice 🧮 en bas à droite pour vérifier !"
+- Ne rappelle la calculatrice QUE pour les erreurs de calcul, pas pour les erreurs de méthode ou de formule
+
 SYSTÈME DE VALIDATION PAR ÉTAPES :
 Tu dois valider chaque étape séparément et utiliser des marqueurs spécifiques pour que l'élève gagne des étoiles :
 
@@ -654,6 +660,34 @@ ATTENTION :
           borderColor: '#667eea',
           opacity: 1
         },
+        calcIndication: {
+          background: 'linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%)',
+          border: '3px solid #ff9800',
+          borderRadius: '20px',
+          padding: '20px 25px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '15px',
+          marginBottom: '25px',
+          maxWidth: '500px',
+          margin: '0 auto 25px',
+          boxShadow: '0 5px 20px rgba(255,152,0,0.3)'
+        },
+        calcIndicationIcon: {
+          fontSize: '2.5rem',
+          flexShrink: 0
+        },
+        calcIndicationTitle: {
+          fontWeight: 'bold',
+          color: '#e65100',
+          fontSize: '1.1rem',
+          margin: '0 0 5px 0'
+        },
+        calcIndicationText: {
+          color: '#bf360c',
+          fontSize: '0.95rem',
+          margin: 0
+        },
       };
 
       // Écran de connexion
@@ -714,6 +748,14 @@ ATTENTION :
                   <p>Salut <strong>{prenomEleve}</strong> ! 👋 Je suis là pour t'aider à résoudre des problèmes de vitesse, distance et durée. On va apprendre ensemble la méthode magique :</p>
                   <p style={styles.methode}><strong>Si... Alors... Donc...</strong></p>
                   <p>Prêt(e) à devenir un(e) champion(ne) ? 🏆</p>
+                </div>
+              </div>
+
+              <div style={styles.calcIndication}>
+                <span style={styles.calcIndicationIcon}>🧮</span>
+                <div>
+                  <p style={styles.calcIndicationTitle}>Calculatrice disponible !</p>
+                  <p style={styles.calcIndicationText}>Clique sur le bouton <strong>🧮</strong> en bas à droite à tout moment pour faire tes calculs.</p>
                 </div>
               </div>
 
